@@ -9,25 +9,24 @@ var locations = [];
 var exportData = "";
 
 function beginProcess(event) {
-
   const fileList = this.files;
 
   if (fileList.length > 0) {
     console.log("Found a file");
 
     const reader = new FileReader();
-  var fileData;
+    var fileData;
 
-  reader.addEventListener(
+    reader.addEventListener(
       "load",
       () => {
         fileData = reader.result;
         main(fileData);
       },
       false
-  );
+    );
 
-  reader.readAsText(event.target.files[0]);
+    reader.readAsText(event.target.files[0]);
   }
 }
 
@@ -40,7 +39,7 @@ async function main(fileData) {
 }
 
 async function processData(fileData) {
-  const dataArray = fileData.split("\r\n");
+  const dataArray = fileData.split("\n");
   console.log(dataArray);
   for (let i = 1; i < dataArray.length - 1; ++i) {
     const test = dataArray[i].split(",");
@@ -55,7 +54,7 @@ function getJSONResponse(address) {
   return new Promise(async (resolve) => {
     var addressFormat = address.replaceAll(" ", "%20");
     const response = await fetch(
-      "https://api.positionstack.com/v1/forward" +
+      "https://cors-anywhere.herokuapp.com/http://api.positionstack.com/v1/forward" +
         "?access_key=95f8e61804aaf2dc976ba2894e297a02" +
         "&query=" +
         addressFormat
