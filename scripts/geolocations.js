@@ -5,8 +5,8 @@ window.addEventListener("DOMContentLoaded", (event) => {
   }
 });
 
-var locations = [];
-var exportData = "";
+let locations = [];
+let exportData = "";
 
 function beginProcess(event) {
   const fileList = this.files;
@@ -15,7 +15,7 @@ function beginProcess(event) {
     console.log("Found a file");
 
     const reader = new FileReader();
-    var fileData;
+    let fileData;
 
     reader.addEventListener(
       "load",
@@ -42,29 +42,29 @@ async function processData(fileData) {
   const dataArray = fileData.split("\n");
   console.log(dataArray);
   for (let i = 1; i < dataArray.length - 1; ++i) {
-    const test = dataArray[i].split(",");
-    console.log(test);
-    const location = `${test[0]}, ${test[1]}`;
-    console.log(`Geocoding ${location}...`);
+    const location = dataArray[i].split(",");
+    const address = `${location[0]}, ${location[1]}, ${location[2]}, ${location[3]}`;
     await getJSONResponse(location);
   }
 }
 
-function getJSONResponse(address) {
+function getJSONResponse(location) {
   return new Promise(async (resolve) => {
-    var addressFormat = address.replaceAll(" ", "%20");
+    let address = location[0];
+    let city = location[1];
+    let state = location[2];
+    let postalCode = location[3];
+    let apiKey = "b4315eb346bd4042b08e667728a4b656";
+    
     const response = await fetch(
-      "http://api.positionstack.com/v1/forward" +
-        "?access_key=95f8e61804aaf2dc976ba2894e297a02" +
-        "&query=" +
-        addressFormat
+        `https://api.geoapify.com/v1/geocode/search?street=${address}&city=${city}&state=${state}&postcode=${postalCode}&apiKey=${apiKey}&format=json`
     );
+    
     const jsonData = await response.json();
-    if (jsonData["data"] === undefined) {
+    if (jsonData["results"] === undefined) {
       console.log(`${address} invalid, or produced an error. Skipping.`);
     } else {
-      var closestDataPointMatch = jsonData["data"][0];
-      console.log(closestDataPointMatch);
+      let closestDataPointMatch = jsonData["results"][0];
       locations.push(closestDataPointMatch);
     }
     resolve();
@@ -81,7 +81,7 @@ function download(fileName) {
       window.navigator.msSaveOrOpenBlob(file, fileName);
     else {
       // Others
-      var a = document.createElement("a"),
+      let a = document.createElement("a"),
         url = URL.createObjectURL(file);
       a.href = url;
       a.download = fileName;
@@ -98,22 +98,21 @@ function download(fileName) {
 
 function writeCSV() {
   return new Promise(async (resolve) => {
-    exportData += "Address,Latitude,Longitude,City,State\n";
+    exportData += "Address,Latitude,Longitude\n";
     console.log("Exporting Data...");
-    for (var i = 0; i < locations.length; ++i) {
-      var address = locations[i] === undefined ? "" : locations[i]["name"];
-      var latitude = locations[i] === undefined ? "" : locations[i]["latitude"];
-      var longitude =
-        locations[i] === undefined ? "" : locations[i]["longitude"];
-      var city = locations[i] === undefined ? "" : locations[i]["locality"];
-      var state = locations[i] === undefined ? "" : locations[i]["region_code"];
-      var content =
+    for (let i = 0; i < locations.length; ++i) {
+      let address = locations[i] === undefined ? "" : locations[i]["street"];
+      let latitude = locations[i] === undefined ? "" : locations[i]["lat"];
+      let longitude =
+        locations[i] === undefined ? "" : locations[i]["lon"];
+      let city = locations[i] === undefined ? "" : locations[i]["city"];
+      let state = locations[i] === undefined ? "" : locations[i]["state"];
+      let content =
         `${address},` +
-        `${latitude},` +
-        `${longitude},` +
         `${city},` +
-        `${state}\n`;
-      console.log(content);
+        `${state},` +
+        `${latitude},` +
+        `${longitude},\n`;
       exportData += content;
     }
     resolve();
