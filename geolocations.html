@@ -1,48 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Geolocations</title>
-    <link href="styles/tabs.css" rel="stylesheet">
-    <link href="styles/general.css" rel="stylesheet">
+
+    <link href="styles/tabs.css" rel="stylesheet" />
+    <link href="styles/general.css" rel="stylesheet" />
+    <link href="styles/pages.css" rel="stylesheet" />
+
     <script src="scripts/tabs.js" defer></script>
     <script src="scripts/geolocations.js"></script>
-</head>
-<body>
-<div class="tabs">
-    <div class="home-tab" onclick="location.href='index.html';">
-        <img src="images/DiehlMetering.png" alt="Diehl Metering" class="diehl-image">
-    </div>
-    <div class="tab-option">
+  </head>
+  <body>
+    <div class="tabs">
+      <div class="home-tab" onclick="location.href='index.html';">
+        <img
+          src="images/DiehlMetering.png"
+          alt="Diehl Metering"
+          class="diehl-image"
+        />
+      </div>
+      <div class="tab-option">
         <div class="header-tool" onclick="location.href='geolocations.html';">
-            <img src="images/location_tool_highlighted.png" alt="Geolocation" class="map-pin-image">
-            <p>Geolocations</p>
+          <img
+            src="images/location_tool_highlighted.png"
+            alt="Geolocation"
+            class="map-pin-image"
+          />
+          <p>Geolocations</p>
         </div>
-    </div>
-    <div class="tab-option">
+      </div>
+      <div class="tab-option">
         <div class="header-tool">
-            <img src="images/kerlink_highlighted.png" alt="Kerlink" class="kerlink-image">
-            <p>Kerlink</p>
+          <img
+            src="images/kerlink_highlighted.png"
+            alt="Kerlink"
+            class="kerlink-image"
+          />
+          <p>Kerlink</p>
         </div>
-    </div>
-    <div class="tab-option">
+      </div>
+      <div class="tab-option">
         <div class="header-tool">
-            <img src="images/izar-tool.png" alt="IZAR" class="izar-image">
-            <p>IZAR</p>
+          <img src="images/izar-tool.png" alt="IZAR" class="izar-image" />
+          <p>IZAR</p>
         </div>
-    </div>
-    <div class="tab-option">
+      </div>
+      <div class="tab-option">
         <div class="header-tool">
-            <img src="images/utility-portal.png" alt="IZAR" class="izar-image">
-            <p>Utility Portal</p>
+          <img src="images/utility-portal.png" alt="IZAR" class="izar-image" />
+          <p>Utility Portal</p>
         </div>
+      </div>
     </div>
-</div>
-<input
-        type="file"
-        id="csv"
-        accept=".csv"
->
-</body>
-</body>
+
+    <div class="sub-tab">
+      <div class="page-info">
+        <h1>Geolocations</h1>
+        <p>
+          Obtain Geolocation Coordinates of a List of Addresses or a Sngle
+          Address
+        </p>
+      </div>
+
+      <div class="tab-option">
+        <div class="header-tool">
+          <img src="images/Excel-icon.png" alt="FILE" class="excel-image" />
+          <p>File Template</p>
+        </div>
+      </div>
+    </div>
+
+    <input type="file" id="csv" accept=".csv" />
+  </body>
 </html>

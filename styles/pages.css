@@ -1,0 +1,30 @@
+.page-info {
+  background-color: white;
+  border-width: 1px;
+  border-style: solid;
+  border-color: gray;
+  display: flex;
+  flex-direction: column;
+  width: 550px;
+  height: 80px;
+  margin-right: 15px;
+}
+
+.page-info h1 {
+  font-size: 20px;
+  margin-bottom: 0px;
+  margin-left: 4px;
+}
+
+.page-info p {
+  margin-left: 4px;
+  margin-bottom: 10px;
+  padding-right: 4px;
+}
+
+.sub-tab {
+  display: flex;
+  flex-direction: row;
+  height: 80px;
+  margin-bottom: 15px;
+}
