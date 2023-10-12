@@ -54,7 +54,7 @@ function getJSONResponse(address) {
   return new Promise(async (resolve) => {
     var addressFormat = address.replaceAll(" ", "%20");
     const response = await fetch(
-      "https://cors-anywhere.herokuapp.com/http://api.positionstack.com/v1/forward" +
+      "http://api.positionstack.com/v1/forward" +
         "?access_key=95f8e61804aaf2dc976ba2894e297a02" +
         "&query=" +
         addressFormat
