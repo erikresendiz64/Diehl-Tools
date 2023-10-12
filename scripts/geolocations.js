@@ -8,26 +8,26 @@ window.addEventListener("DOMContentLoaded", (event) => {
 var locations = [];
 var exportData = "";
 
-function beginProcess() {
+function beginProcess(event) {
+
   const fileList = this.files;
 
   if (fileList.length > 0) {
     console.log("Found a file");
 
     const reader = new FileReader();
-    const file = fileList[0];
-    var fileData;
+  var fileData;
 
-    reader.addEventListener(
+  reader.addEventListener(
       "load",
       () => {
         fileData = reader.result;
         main(fileData);
       },
       false
-    );
+  );
 
-    reader.readAsText(file);
+  reader.readAsText(event.target.files[0]);
   }
 }
 
@@ -121,7 +121,7 @@ function writeCSV() {
   });
 }
 
-function download(url) {
+function downloadTemplate(url) {
   const a = document.createElement("a");
   a.href = url;
   a.download = url.split("/").pop();
