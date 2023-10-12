@@ -1,0 +1,63 @@
+.tabs {
+    height: 80px;
+    margin-left: 1px;
+    margin-bottom: 40px;
+    display: flex;
+    flex-direction: row;
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    justify-content: left;
+    align-items: center;
+    width: 550px;
+    background-color: white;
+}
+
+.tab-option {
+    width: 100px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.tab-option:hover {
+    opacity: 0.7;
+    box-shadow: 2px 2px 2px #656565;
+}
+
+.home-tab {
+    height: 80px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.home-tab:hover {
+    opacity: 0.7;
+    box-shadow: 2px 2px 2px #656565;
+}
+
+.header-tool {
+    height: 80px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: gray;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100px;
+}
+
+.header-tool p {
+    font-size: 13px;
+}
+
+.header-tool img {
+    margin-top: 20px;
+    height: 42px;
+    width: 42px;
+}
+
+.diehl-image {
+    margin-top: 10px;
+    width: 150px;
+}
