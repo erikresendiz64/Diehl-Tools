@@ -98,10 +98,10 @@ function download(fileName) {
 
 function writeCSV() {
   return new Promise(async (resolve) => {
-    exportData += "Address,Latitude,Longitude\n";
+    exportData += "Address,City,State,Latitude,Longitude\n";
     console.log("Exporting Data...");
     for (let i = 0; i < locations.length; ++i) {
-      let address = locations[i] === undefined ? "" : locations[i]["street"];
+      let address = locations[i] === undefined ? "" : locations[i]["address_line1"];
       let latitude = locations[i] === undefined ? "" : locations[i]["lat"];
       let longitude =
         locations[i] === undefined ? "" : locations[i]["lon"];

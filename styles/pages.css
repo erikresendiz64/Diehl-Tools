@@ -28,3 +28,7 @@
   height: 80px;
   margin-bottom: 15px;
 }
+
+.input-csv input {
+  font-size: 12px;
+}
