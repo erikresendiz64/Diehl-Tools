@@ -64,7 +64,7 @@ function getJSONResponse(location) {
     if (jsonData["results"] === undefined) {
       console.log(`${address} invalid, or produced an error. Skipping.`);
     } else {
-      let closestDataPointMatch = jsonData["results"][0];
+      let closestDataPointMatch = jsonData;
       locations.push(closestDataPointMatch);
     }
     resolve();
@@ -101,12 +101,12 @@ function writeCSV() {
     exportData += "Address,City,State,Latitude,Longitude\n";
     console.log("Exporting Data...");
     for (let i = 0; i < locations.length; ++i) {
-      let address = locations[i] === undefined ? "" : locations[i]["address_line1"];
-      let latitude = locations[i] === undefined ? "" : locations[i]["lat"];
+      let address = locations[i] === undefined ? "" : locations[i]["query"]["street"];
+      let latitude = locations[i] === undefined ? "" : locations[i]["results"][0]["lat"];
       let longitude =
-        locations[i] === undefined ? "" : locations[i]["lon"];
-      let city = locations[i] === undefined ? "" : locations[i]["city"];
-      let state = locations[i] === undefined ? "" : locations[i]["state"];
+        locations[i] === undefined ? "" : locations[i]["results"][0]["lon"];
+      let city = locations[i] === undefined ? "" : locations[i]["query"]["city"];
+      let state = locations[i] === undefined ? "" : locations[i]["query"]["state"];
       let content =
         `${address},` +
         `${city},` +
