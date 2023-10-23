@@ -43,7 +43,6 @@ async function processData(fileData) {
   console.log(dataArray);
   for (let i = 1; i < dataArray.length - 1; ++i) {
     const location = dataArray[i].split(",");
-    const address = `${location[0]}, ${location[1]}, ${location[2]}, ${location[3]}`;
     await getJSONResponse(location);
   }
 }
@@ -59,6 +58,7 @@ function getJSONResponse(location) {
     const response = await fetch(
         `https://api.geoapify.com/v1/geocode/search?street=${address}&city=${city}&state=${state}&postcode=${postalCode}&apiKey=${apiKey}&format=json`
     );
+    console.log(`https://api.geoapify.com/v1/geocode/search?street=${address}&city=${city}&state=${state}&postcode=${postalCode}&apiKey=${apiKey}&format=json`)
     
     const jsonData = await response.json();
     if (jsonData["results"] === undefined) {
@@ -119,11 +119,3 @@ function writeCSV() {
   });
 }
 
-function downloadTemplate(url) {
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = url.split("/").pop();
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
