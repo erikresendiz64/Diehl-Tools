@@ -80,11 +80,10 @@ async function processData(fileData, token) {
     for (let i = 1; i < dataArray.length - 1; ++i) {
         let euiID = dataArray[i].replace("\r", "");
         if (euiID) {
-            let MIU = "94A40C0B0100" + euiID;
-            if (isValidEUI(MIU)) {
-                await removeEUI(MIU, token);
+            if (isValidEUI(euiID)) {
+                await removeEUI(euiID, token);
             } else {
-                console.log(`Could not remove MIU ${MIU}`);
+                console.log(`Could not remove MIU ${euiID}`);
             }
         }
     }
