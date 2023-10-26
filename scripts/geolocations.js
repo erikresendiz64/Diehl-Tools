@@ -54,14 +54,15 @@ function getJSONResponse(location) {
     let state = location[2];
     let postalCode = location[3];
     let apiKey = "b4315eb346bd4042b08e667728a4b656";
+    document.getElementById('results_id').innerText += `Geolocating Address ${address}\n`;
     
     const response = await fetch(
         `https://api.geoapify.com/v1/geocode/search?street=${address}&city=${city}&state=${state}&postcode=${postalCode}&apiKey=${apiKey}&format=json`
     );
-    console.log(`https://api.geoapify.com/v1/geocode/search?street=${address}&city=${city}&state=${state}&postcode=${postalCode}&apiKey=${apiKey}&format=json`)
     
     const jsonData = await response.json();
     if (jsonData["results"] === undefined) {
+      document.getElementById('results_id').innerText += `${address}  is invalid, or produced an error\n\n`;
       console.log(`${address} invalid, or produced an error. Skipping.`);
     } else {
       let closestDataPointMatch = jsonData;
@@ -119,3 +120,19 @@ function writeCSV() {
   });
 }
 
+async function geolocateAddress(){
+  document.getElementById("results_id").innerText = "";
+  let userAddress = document.getElementById("address").value;
+  await getJSONResponse(userAddress.split(","));
+
+  let address = locations[0] === undefined ? "" : locations[0]["query"]["street"];
+  let latitude = locations[0] === undefined ? "" : locations[0]["results"][0]["lat"];
+  let longitude =
+      locations[0] === undefined ? "" : locations[0]["results"][0]["lon"];
+  let city = locations[0] === undefined ? "" : locations[0]["query"]["city"];
+  let state = locations[0] === undefined ? "" : locations[0]["query"]["state"];
+  document.getElementById("results_id").innerText +=
+      `\n${address}, ${city}, ${state} has coordinates (${latitude},${longitude})`;
+
+  document.getElementById("results_id").innerText += "Process Finished";
+}

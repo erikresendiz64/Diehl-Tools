@@ -76,21 +76,23 @@ async function retrieveToken() {
 
 async function processData(fileData, token) {
     const dataArray = fileData.split("\n");
+    document.getElementById('csv').value = null;
     console.log(dataArray);
     for (let i = 1; i < dataArray.length - 1; ++i) {
         let euiID = dataArray[i].replace("\r", "");
         if (euiID) {
-            if (isValidEUI(euiID)) {
-                await removeEUI(euiID, token);
-            } else {
-                console.log(`Could not remove MIU ${euiID}`);
-            }
+            await removeEUI(euiID, token);
         }
     }
 }
 
 async function removeEUI(MIU, token) {
-    console.log(`Removing MIU ${MIU}`);
+    document.getElementById("results_id").innerText += `Removing MIU ${MIU}\n`;
+
+    if(!isValidEUI(MIU)){
+        document.getElementById("results_id").innerText += "Incorrect Serial Number Format\n\n"
+        return;
+    }
 
     let deleteRequest = await fetch ('https://nwm.izarplus.com/gms/application/endDevices/' + MIU,
         {
@@ -102,6 +104,18 @@ async function removeEUI(MIU, token) {
         });
 
     if(deleteRequest.status >= 200 && deleteRequest.status < 300) {
-        console.log("Device Succesfully Deleted")
+        document.getElementById("results_id").innerText += `Device successfully deleted\n\n`;
+    } else {
+        document.getElementById("results_id").innerText += `Couldn't delete device\n\n`;
     }
+}
+
+async function removeSingleEUI() {
+    document.getElementById("results_id").innerText = "";
+    let token = await retrieveToken();
+    let EUI = document.getElementById("text-EUI").value;
+    let MIU = "94A40C0B0100" + EUI;
+    await removeEUI(MIU, token);
+    document.getElementById("results_id").innerText += "Process Finished";
+
 }

@@ -8,6 +8,8 @@
   <link href="styles/tabs.css" rel="stylesheet" />
   <link href="styles/general.css" rel="stylesheet" />
   <link href="styles/pages.css" rel="stylesheet" />
+  <link href="styles/tool.css" rel="stylesheet" />
+  <link href="styles/kerlink.css" rel="stylesheet" />
 
   <script src="scripts/tabs.js" defer></script>
   <script src="scripts/kerlink.js"></script>
@@ -56,34 +58,51 @@
   </div>
 </div>
 
-<div class="sub-tab">
-  <div class="page-info">
-    <h1>Kerlink End-Device Removal</h1>
-    <p>
-      Delete EUI Devices From Kerlink via Serial Number(s)
-    </p>
-  </div>
-
-  <div class="tab-option">
-    <div
-            class="header-tool"
-            onclick="downloadTemplate('files_/kerlink_euis.csv');"
-    >
-      <img src="images/Excel-icon.png" alt="FILE" class="excel-image" />
-      <p>File Template</p>
+<div class="tool_1">
+  <div class="user-actions">
+    <div class="sub-tab">
+      <div class="tool-info">
+        <div class="page-info">
+          <h1>Kerlink End-Device Removal</h1>
+          <p>
+            Delete EUI Devices From Kerlink via Serial Number(s)
+          </p>
+        </div>
+        <div class="tab-option">
+          <div
+                  class="header-tool"
+                  onclick="downloadTemplate('files_/kerlink_euis.csv');"
+          >
+            <img src="images/Excel-icon.png" alt="FILE" class="excel-image" />
+            <p>File Template</p>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div class="data-input">
+      <h1>
+        Import a List of Devices or Enter a Single Device to be Removed
+      </h1>
+      <div class="input-csv">
+        <input type="file" id="csv" accept=".csv" />
+      </div>
+      <div class="input-text">
+        <label>
+          Enter the Last 4 Characters of the Radio Serial Number
+          <input type="text" id="text-EUI" maxlength="4" minlength="4"/>
+        </label>
+        <button id="submit-btn" onclick="removeSingleEUI()">Submit</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="results">
+    <h1>Removal Results</h1>
+    <p class="results_p" id="results_id">Results..</p>
   </div>
 </div>
-
-<div class="input-csv">
-  <input type="file" id="csv" accept=".csv" />
-</div>
-
-</body>
-</html>
-</title>
-</head>
-<body>
 
 </body>
 </html>

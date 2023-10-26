@@ -7,6 +7,8 @@
     <link href="styles/tabs.css" rel="stylesheet" />
     <link href="styles/general.css" rel="stylesheet" />
     <link href="styles/pages.css" rel="stylesheet" />
+    <link href="styles/tool.css" rel="stylesheet" />
+    <link href="styles/geolocations.css" rel="stylesheet" />
 
     <script src="scripts/tabs.js" defer></script>
     <script src="scripts/geolocations.js"></script>
@@ -55,29 +57,53 @@
       </div>
     </div>
 
-    <div class="sub-tab">
-      <div class="page-info">
-        <h1>Geolocations</h1>
-        <p>
-          Obtain Geolocation Coordinates of a List of Addresses or a Sngle
-          Address
-        </p>
-      </div>
-
-      <div class="tab-option">
-        <div
-          class="header-tool"
-          onclick="downloadTemplate('files_/geolocations.csv');"
-        >
-          <img src="images/Excel-icon.png" alt="FILE" class="excel-image" />
-          <p>File Template</p>
+    <div class="tool_1">
+      <div class="user-actions">
+        <div class="sub-tab">
+          <div class="tool-info">
+            <div class="page-info">
+              <h1>Geolocations</h1>
+              <p>
+                Obtain Geolocation Coordinates of a List of Addresses or a Single
+                Address
+              </p>
+            </div>
+            <div class="tab-option">
+              <div
+                      class="header-tool"
+                      onclick="downloadTemplate('files_/geolocations.csv');"
+              >
+                <img src="images/Excel-icon.png" alt="FILE" class="excel-image" />
+                <p>File Template</p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div class="data-input">
+          <h1>
+            Import a List of Addresses or Enter a Single Address to be Geolocated
+          </h1>
+          <div class="input-csv">
+            <input type="file" id="csv" accept=".csv" />
+          </div>
+          <div class="input-text">
+            <label>
+              Enter an Address (Address, City, State, ZIP)
+              <input type="text" class="text-address" id="address"/>
+            </label>
+            <button id="submit-btn" onclick="geolocateAddress()">Submit</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="results">
+        <h1>Geolocation Results</h1>
+        <p class="results_p" id="results_id">Results..</p>
       </div>
     </div>
 
-    <div class="input-csv">
-      <input type="file" id="csv" accept=".csv" />
-    </div>
 
   </body>
 </html>
