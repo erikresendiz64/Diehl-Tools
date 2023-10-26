@@ -132,7 +132,7 @@ async function geolocateAddress(){
   let city = locations[0] === undefined ? "" : locations[0]["query"]["city"];
   let state = locations[0] === undefined ? "" : locations[0]["query"]["state"];
   document.getElementById("results_id").innerText +=
-      `\n${address}, ${city}, ${state} has coordinates (${latitude},${longitude})`;
+      `${address}, ${city}, ${state} has coordinates (${latitude},${longitude})\n\n`;
 
   document.getElementById("results_id").innerText += "Process Finished";
 }
