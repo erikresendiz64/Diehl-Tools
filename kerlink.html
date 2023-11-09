@@ -104,5 +104,39 @@
   </div>
 </div>
 
+<div class="tool_1">
+  <div class="user-actions">
+    <div class="sub-tab">
+      <div class="tool-info">
+        <div class="page-info">
+          <h1>Kerlink End-Device Payload Decryption</h1>
+          <p>
+            Decrypt EUI Devices From Kerlink via Serial Number(s)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="data-input">
+      <h1>
+        Enter an End-Device to be Decrypted
+      </h1>
+      <div class="input-text-decryption">
+        <label>
+          Enter the Last 4 Characters of the Radio Serial Number
+          <input type="text" id="text-EUI-payload" maxlength="4" minlength="4"/>
+        </label>
+        <button id="submit-btn" onclick="decryptEUI()">Submit</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="results">
+    <h1>Payload Results</h1>
+    <p class="results_payload" id="results_id_payload">Results..</p>
+  </div>
+</div>
+
 </body>
 </html>
