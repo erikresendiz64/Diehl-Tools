@@ -191,7 +191,7 @@ function decryptPayload(payload) {
 
     const hexPayload = base64ToHex(payload, '-');
 
-    document.getElementById("results_id_payload").innerText += `Payload [Hex] : ${hexPayload}\n`
+    document.getElementById("results_id_payload").innerText += `Payload [Hex] : ${hexPayload}\n\n`
 
     decodePayload(hexPayload);
 
