@@ -8,6 +8,7 @@ window.addEventListener("DOMContentLoaded", (event) => {
 const USER = "erik.resendiz@diehl.com";
 const PASSWORD = "metering2023!";
 const ROLE = "SUPER_ADMIN"
+var deletedDevices = 0;
 
 function isValidEUI(MIU) {
     let MIU_regex = /94A40C0B[A-F0-9]{8}$/;
@@ -41,9 +42,11 @@ function beginProcess(event) {
 }
 
 async function main(fileData) {
+    document.getElementById("results_id").innerText = "";
     let token = await retrieveToken();
     await processData(fileData, token);
     console.log("Process Finished")
+    document.getElementById("results_id").innerText += "Process Finished. Successfully Deleted " + deletedDevices + " Device(s).";
 }
 
 async function retrieveToken() {
@@ -105,6 +108,7 @@ async function removeEUI(MIU, token) {
 
     if(deleteRequest.status >= 200 && deleteRequest.status < 300) {
         document.getElementById("results_id").innerText += `Device successfully deleted\n\n`;
+        deletedDevices += 1;
     } else {
         document.getElementById("results_id").innerText += `Couldn't delete device\n\n`;
     }

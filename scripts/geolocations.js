@@ -31,6 +31,7 @@ function beginProcess(event) {
 }
 
 async function main(fileData) {
+  document.getElementById("results_id").innerText = "";
   await processData(fileData);
   console.log("Writing CSV");
   await writeCSV();
