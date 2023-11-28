@@ -1,15 +1,8 @@
-window.addEventListener("DOMContentLoaded", (event) => {
-    const input = document.getElementById("csv");
-    if (input) {
-        input.addEventListener("change", beginProcess);
-    }
-});
-
-const USER = "erik.resendiz@diehl.com";
-const PASSWORD = "metering2023!";
-const ROLE = "SUPER_ADMIN"
-var deletedDevices = 0;
-
+const authorization = {
+    USER : "erik.resendiz@diehl.com",
+    PASSWORD : "metering2023!",
+    ROLE : "SUPER_ADMIN"
+};
 function isValidEUI(MIU) {
     let MIU_regex = /94A40C0B[A-F0-9]{8}$/;
     let isValid = MIU_regex.test(MIU) && MIU.length == 16;
@@ -19,45 +12,19 @@ function isValidEUI(MIU) {
     return isValid;
 }
 
-function beginProcess(event) {
-    const fileList = this.files;
-
-    if (fileList.length > 0) {
-        console.log("Found a file");
-
-        const reader = new FileReader();
-        let fileData;
-
-        reader.addEventListener(
-            "load",
-            () => {
-                fileData = reader.result;
-                main(fileData);
-            },
-            false
-        );
-
-        reader.readAsText(event.target.files[0]);
-    }
-}
-
-async function main(fileData) {
-    document.getElementById("results_id").innerText = "";
-    let token = await retrieveToken();
-    await processData(fileData, token);
-    console.log("Process Finished")
-    document.getElementById("results_id").innerText += "Process Finished. Successfully Deleted " + deletedDevices + " Device(s).";
-}
+const USER = "erik.resendiz@diehl.com";
+const PASSWORD = "metering2023!";
+const ROLE = "SUPER_ADMIN";
 
 async function retrieveToken() {
     let authorizationRequest = await fetch('https://nwm.izarplus.com/gms/application/login',
         {
             method: 'POST',
             body: JSON.stringify({
-                email: USER,
-                login: USER,
-                password: PASSWORD,
-                role: ROLE,
+                email: authorization.USER,
+                login: authorization.USER,
+                password: authorization.PASSWORD,
+                role: authorization.ROLE,
             }),
             headers : {
                 "Content-Type" : "application/json",
@@ -77,61 +44,17 @@ async function retrieveToken() {
 
 }
 
-async function processData(fileData, token) {
-    const dataArray = fileData.split("\n");
-    document.getElementById('csv').value = null;
-    console.log(dataArray);
-    for (let i = 1; i < dataArray.length - 1; ++i) {
-        let euiID = dataArray[i].replace("\r", "");
-        if (euiID) {
-            await removeEUI(euiID, token);
-        }
-    }
-}
-
-async function removeEUI(MIU, token) {
-    document.getElementById("results_id").innerText += `Removing MIU ${MIU}\n`;
-
-    if(!isValidEUI(MIU)){
-        document.getElementById("results_id").innerText += "Incorrect Serial Number Format\n\n"
-        return;
-    }
-
-    let deleteRequest = await fetch ('https://nwm.izarplus.com/gms/application/endDevices/' + MIU,
-        {
-            method: 'DELETE',
-            headers: {
-                "Authorization" : token,
-                "Accept" : "application/json",
-            }
-        });
-
-    if(deleteRequest.status >= 200 && deleteRequest.status < 300) {
-        document.getElementById("results_id").innerText += `Device successfully deleted\n\n`;
-        deletedDevices += 1;
-    } else {
-        document.getElementById("results_id").innerText += `Couldn't delete device\n\n`;
-    }
-}
-
-async function removeSingleEUI() {
-    document.getElementById("results_id").innerText = "";
-    let token = await retrieveToken();
-    let EUI = document.getElementById("text-EUI").value;
-    let MIU = "94A40C0B0100" + EUI;
-    await removeEUI(MIU, token);
-    document.getElementById("results_id").innerText += "Process Finished";
-
-}
-
 async function decryptEUI(){
     let EUI = document.getElementById("text-EUI-payload").value;
+    let selectFPort = document.getElementById("fports");
+    let fPort = selectFPort.options[selectFPort.selectedIndex].text;
+
     let token = await retrieveToken();
-    await requestPayload(token, EUI);
+    await requestPayload(token, EUI, fPort);
     document.getElementById("results_id_payload").innerText += "\nProcess Finished\n";
 }
 
-async function requestPayload(token, EUI) {
+async function requestPayload(token, EUI, fPort) {
     let MIU = "94A40C0B0100" + EUI;
 
     if(!isValidEUI(MIU)) {
@@ -154,7 +77,7 @@ async function requestPayload(token, EUI) {
                     "operation": "eq",
                     "operand": "fPort",
                     "values": [
-                        "14"
+                        fPort.substring(fPort.length - 2, fPort.length)
                     ]
                 }
             ]
@@ -183,7 +106,7 @@ async function requestPayload(token, EUI) {
         document.getElementById("results_id_payload").innerText = `Payload Found with Value ${payload} and fPort ${fPort}\n\n`;
         document.getElementById("results_id_payload").innerText += "Decrypting Payload...\n"
 
-        await decryptPayload(payload);
+        await decryptPayload(payload, fPort);
 
     } else {
         console.log("Unsuccesfull Request")
@@ -191,7 +114,7 @@ async function requestPayload(token, EUI) {
 
 }
 
-function decryptPayload(payload) {
+function decryptPayload(payload, fPort) {
 
     const hexPayload = base64ToHex(payload, '-');
 

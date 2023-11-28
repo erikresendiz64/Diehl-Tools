@@ -11,8 +11,10 @@
   <link href="styles/tool.css" rel="stylesheet" />
   <link href="styles/kerlink.css" rel="stylesheet" />
 
-  <script src="scripts/kerlink.js"></script>
-  <script src="scripts/general.js"></script>
+  <script src="scripts/General-Functions/general.js"></script>
+  <script src="scripts/IoT/Kerlink/device-removal.js"></script>
+  <script src="scripts/IoT/Kerlink/payload-decryption.js"></script>
+
 </head>
 <body>
 <div class="tabs">
@@ -50,9 +52,9 @@
     </div>
   </div>
   <div class="tab-option">
-    <div class="header-tool">
-      <img src="images/utility-portal.png" alt="IZAR" class="izar-image" />
-      <p>Utility Portal</p>
+    <div class="header-tool" onclick="location.href='viaanix.html';">
+      <img src="images/gateway.png" alt="Viaanix" class="izar-image" />
+      <p>Viaanix</p>
     </div>
   </div>
 </div>
@@ -113,19 +115,53 @@
             Decrypt EUI Devices From Kerlink via Serial Number(s)
           </p>
         </div>
+        <div class="tab-option">
+          <div
+                  class="header-tool"
+                  onclick="downloadTemplate('files_/kerlink_euis.csv');"
+          >
+            <img src="images/Excel-icon.png" alt="FILE" class="excel-image" />
+            <p>File Template</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="data-input">
       <h1>
-        Enter an End-Device to be Decrypted
+        Import a List od Devices or Enter a Single Device to be Decrypted
       </h1>
       <div class="input-text-decryption">
-        <label>
-          Enter the Last 4 Characters of the Radio Serial Number
-          <input type="text" id="text-EUI-payload" maxlength="4" minlength="4"/>
-        </label>
-        <button id="submit-btn-decrypt" onclick="decryptEUI()">Submit</button>
+        <div class="input-csv">
+          <input type="file" id="csv-decrypt" accept=".csv" />
+        </div>
+        <div class="decrypt-options">
+          <label>
+            Enter the Last 4 Characters of the Radio Serial Number
+            <input type="text" id="text-EUI-payload" maxlength="4" minlength="4"/>
+          </label>
+          <div class="fPort">
+            <label for="fports">fPort:</label>
+
+            <select name="fport" id="fports">
+              <option value="fP14">fPort11</option>
+              <option value="fP54">fPort12</option>
+              <option value="fP60">fPort13</option>
+              <option value="fP10">fPort14</option>
+              <option value="fP14">fPort20</option>
+              <option value="fP54">fPort21</option>
+              <option value="fP60">fPort22</option>
+              <option value="fP10">fPort32</option>
+              <option value="fP14">fPort33</option>
+              <option value="fP54">fPort42</option>
+              <option value="fP60">fPort43</option>
+              <option value="fP10">fPort52</option>
+              <option value="fP10">fPort62</option>
+              <option value="fP10">fPort70</option>
+            </select>
+          </div>
+          <button id="submit-btn-decrypt" onclick="decryptEUI()">Submit</button>
+        </div>
       </div>
     </div>
 
