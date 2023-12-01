@@ -12,143 +12,8 @@ function isValidEUI(MIU) {
     return isValid;
 }
 
-const USER = "erik.resendiz@diehl.com";
-const PASSWORD = "metering2023!";
-const ROLE = "SUPER_ADMIN";
-
-async function retrieveToken() {
-    let authorizationRequest = await fetch('https://nwm.izarplus.com/gms/application/login',
-        {
-            method: 'POST',
-            body: JSON.stringify({
-                email: authorization.USER,
-                login: authorization.USER,
-                password: authorization.PASSWORD,
-                role: authorization.ROLE,
-            }),
-            headers : {
-                "Content-Type" : "application/json",
-                "Accept" : "application/json"
-            },
-        });
-
-    let authorizationResponse = await authorizationRequest.json();
-
-    if(authorizationRequest.status >= 200 && authorizationRequest.status < 300) {
-        console.log("Athorization Succesful");
-        return authorizationResponse["token"];
-    } else {
-        console.log("Authorization Unsuccesful");
-        return ("");
-    }
-
-}
-
-async function decryptEUI(){
-    let EUI = document.getElementById("text-EUI-payload").value;
-    let selectFPort = document.getElementById("fports");
-    let fPort = selectFPort.options[selectFPort.selectedIndex].text;
-
-    let token = await retrieveToken();
-    await requestPayload(token, EUI, fPort);
-    document.getElementById("results_id_payload").innerText += "\nProcess Finished\n";
-}
-
-async function requestPayload(token, EUI, fPort) {
-    let MIU = "94A40C0B0100" + EUI;
-
-    if(!isValidEUI(MIU)) {
-        document.getElementById("results_id_payload").innerText += "Incorrect Serial Number Format\n\n"
-        return;
-    }
-
-    const params = new URLSearchParams({
-        search: JSON.stringify({
-            "operator": "AND",
-            "conditions": [
-                {
-                    "operation": "eq",
-                    "operand": "endDevice.devEui",
-                    "values": [
-                        MIU
-                    ]
-                },
-                {
-                    "operation": "eq",
-                    "operand": "fPort",
-                    "values": [
-                        fPort.substring(fPort.length - 2, fPort.length)
-                    ]
-                }
-            ]
-        })
-    })
-
-    let decryptRequest = await fetch (`https://nwm.izarplus.com/gms/application/dataUp?` + params.toString(),
-        {
-            method: 'GET',
-            headers: {
-                "Authorization": token
-            }
-        });
-
-    if(decryptRequest.status >= 200 && decryptRequest.status < 300) {
-        console.log("Succesful Request");
-        let decryptResponse = await decryptRequest.json();
-        if(decryptResponse == undefined || decryptResponse["count"] == 0) {
-            document.getElementById("results_id_payload").innerText += "No Payload Found for MIU " + MIU + "\n\n";
-            return;
-        }
-
-        const EUIInfo = decryptResponse["list"][0];
-        let payload = EUIInfo["payload"];
-        let fPort = EUIInfo["fPort"];
-        document.getElementById("results_id_payload").innerText = `Payload Found with Value ${payload} and fPort ${fPort}\n\n`;
-        document.getElementById("results_id_payload").innerText += "Decrypting Payload...\n"
-
-        await decryptPayload(payload, fPort);
-
-    } else {
-        console.log("Unsuccesfull Request")
-    }
-
-}
-
-function decryptPayload(payload, fPort) {
-
-    const hexPayload = base64ToHex(payload, '-');
-
-    document.getElementById("results_id_payload").innerText += `Payload [Hex] : ${hexPayload}\n\n`
-
-    decodePayload(hexPayload);
-
-}
-
-function decodePayload(payload) {
-    const fromHexString = (hexString) =>
-        Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
-
-    const batteryByte = payload.substring(0,2);
-    const SNRByte = payload.substring(3,5);
-    const RSSIByte = payload.substring(6,8);
-    const txPowerByte = payload.substring(9,11);
-    const resetsByte = payload.substring(12,14);
-    const fwByte = payload.substring(15,17);
-
-    const batteryPercentage = fromHexString(batteryByte);
-    const averageSNR = parseInt(SNRByte, 16) > 127 ? parseInt(SNRByte, 16) - 256 : parseInt(SNRByte, 16);
-    const averageRSSI = fromHexString(RSSIByte);
-    const averageTxPower = fromHexString(txPowerByte);
-    const numOfResets = parseInt(resetsByte, 16);
-    const firmwareVersion = parseInt(fwByte, 16);
-
-    document.getElementById("results_id_payload").innerText += `Battery Percentage : ${batteryPercentage}\n`
-    document.getElementById("results_id_payload").innerText += `Average SNR : ${averageSNR}\n`
-    document.getElementById("results_id_payload").innerText += `Average RSSI : ${averageRSSI}\n`
-    document.getElementById("results_id_payload").innerText += `Average Tx Power : ${averageTxPower}\n`
-    document.getElementById("results_id_payload").innerText += `Number of Resets : ${numOfResets}\n`
-    document.getElementById("results_id_payload").innerText += `Firmware Version : 1.${firmwareVersion}\n`
-
+function timeConverter(UNIX_timestamp){
+    return new Date(UNIX_timestamp).toLocaleString("en-US");
 }
 
 const base64ToHex = ( () => {
@@ -188,3 +53,242 @@ const base64ToHex = ( () => {
             values[ keys.charCodeAt( i ) ] = i;
     }
 } )();
+
+const fromHexString = (hexString) =>
+    Uint8Array.from(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
+
+function getBit(n, fromBase, bitPosition) {
+    let binary = parseInt(n, fromBase).toString(2).padStart(8, '0');
+
+    return binary.at(bitPosition - 1);
+}
+
+function hexToBin(n) {
+    return parseInt(n, 16).toString(2).padStart(8, '0');
+}
+
+async function retrieveToken() {
+    let authorizationRequest = await fetch('https://nwm.izarplus.com/gms/application/login',
+        {
+            method: 'POST',
+            body: JSON.stringify({
+                email: authorization.USER,
+                login: authorization.USER,
+                password: authorization.PASSWORD,
+                role: authorization.ROLE,
+            }),
+            headers : {
+                "Content-Type" : "application/json",
+                "Accept" : "application/json"
+            },
+        });
+
+    let authorizationResponse = await authorizationRequest.json();
+
+    if(authorizationRequest.status >= 200 && authorizationRequest.status < 300) {
+        console.log("Athorization Succesful");
+        return authorizationResponse["token"];
+    } else {
+        console.log("Authorization Unsuccesful");
+        return ("");
+    }
+
+}
+
+async function decryptEUI(){
+    document.getElementById("results_id_payload").innerText = "";
+    let EUI = document.getElementById("text-EUI-payload").value;
+    let selectFPort = document.getElementById("fports");
+    let fPort = selectFPort.options[selectFPort.selectedIndex].text;
+
+    let token = await retrieveToken();
+    await requestPayload(token, EUI, fPort);
+    document.getElementById("results_id_payload").innerText += "\nPayload Decryption Finished\n";
+}
+
+async function requestPayload(token, EUI, fPort) {
+    let MIU = "94A40C0B0100" + EUI;
+    let fPortType = fPort.substring(fPort.length - 2, fPort.length)
+
+    if(!isValidEUI(MIU)) {
+        document.getElementById("results_id_payload").innerText += "Incorrect Serial Number Format\n\n"
+        return;
+    }
+
+    const params = new URLSearchParams({
+        search: JSON.stringify({
+            "operator": "AND",
+            "conditions": [
+                {
+                    "operation": "eq",
+                    "operand": "endDevice.devEui",
+                    "values": [
+                        MIU
+                    ]
+                },
+                {
+                    "operation": "eq",
+                    "operand": "fPort",
+                    "values": [
+                        fPortType
+                    ]
+                }
+            ]
+        })
+    })
+
+    let decryptRequest = await fetch (`https://nwm.izarplus.com/gms/application/dataUp?` + params.toString(),
+        {
+            method: 'GET',
+            headers: {
+                "Authorization": token
+            }
+        });
+
+    if(decryptRequest.status >= 200 && decryptRequest.status < 300) {
+        console.log("Succesful Request");
+        let decryptResponse = await decryptRequest.json();
+        if(decryptResponse == undefined || decryptResponse["count"] == 0) {
+            document.getElementById("results_id_payload").innerText += `No Payload Found for MIU ${MIU} with fPort ${fPortType} \n\n`;
+            return;
+        }
+
+        processPayloadInformation(decryptResponse);
+
+    } else {
+        console.log("Unsuccesfull Request")
+    }
+
+}
+
+function processPayloadInformation(response) {
+    let EUIInfo = response["list"];
+    let numMessages = response["count"];
+
+    document.getElementById("results_id_payload").innerText = `${numMessages} Message(s) Found\n`;
+    let iterMessages = 1;
+
+    EUIInfo.forEach((message) => {
+        let payload = message["payload"];
+        let fPort = message["fPort"];
+        let timestamp = message["recvTime"];
+        document.getElementById("results_id_payload").innerText += `\n${iterMessages}.) Payload Found on: ${timeConverter(timestamp)}\n`;
+        document.getElementById("results_id_payload").innerText += `Payload: ${payload}\nfPort: ${fPort}\n`;
+
+        decryptPayload(payload, fPort)
+        iterMessages ++;
+    });
+
+}
+
+function decryptPayload(payload, fPort) {
+
+    const hexPayload = base64ToHex(payload, '-');
+
+    document.getElementById("results_id_payload").innerText += `Payload [Hex] : ${hexPayload}\n\n`
+
+    switch (fPort) {
+        case 11:
+            decodePayload11(hexPayload);
+            break;
+        case 12:
+            decodePayload12(hexPayload);
+            break;
+        case 13:
+            decodePayload13(hexPayload);
+            break;
+        case 14:
+            decodePayload14(hexPayload);
+            break;
+        case 21:
+            decodePayload21(hexPayload);
+            break;
+        default:
+            document.getElementById("results_id_payload").innerText += `Error Occurred.\n`
+            return;
+    }
+
+}
+
+function decodePayload11(payload) {
+    const alarmDataByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
+    const meterStatusByte = hexToBin(payload.substring(12,14)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
+    const miscByte = payload.substring(24,26);
+
+    //const alarmData =
+    //const meterStatus =
+    const meterPort = getBit(miscByte, 16, 8) > 0 ? 2 : 1;
+
+    document.getElementById("results_id_payload").innerText += `Alarm Data: ${alarmDataByte}\n`
+    document.getElementById("results_id_payload").innerText += `Meter Status: ${meterStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
+}
+
+function decodePayload12(payload) {
+    const alarmDataByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
+    const meterStatusByte = hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
+    const miscByte = payload.substring(24,26);
+
+    //const alarmData =
+    //const meterStatus =
+    const meterPort = getBit(miscByte, 16, 8) > 0 ? 2 : 1;
+
+    document.getElementById("results_id_payload").innerText += `Alarm Data: ${alarmDataByte}\n`
+    document.getElementById("results_id_payload").innerText += `MIU Status: ${meterStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
+}
+
+function decodePayload13(payload) {
+
+    const meterSerialNumberByte =  payload.substring(9,11) + payload.substring(6,8) + payload.substring(3,5) + payload.substring(0,2);
+    const meterPortByte = payload.substring(12,14);
+    const meterBatteryByte = payload.substring(15,17);
+
+    const meterSerialNumber = parseInt(meterSerialNumberByte, 16);
+    const meterPort = getBit(meterPortByte, 16, 8) > 0 ? 2 : 1;
+    const meterBattery = parseInt(meterBatteryByte, 16);
+
+    document.getElementById("results_id_payload").innerText += `Meter Serial Number: ${meterSerialNumber}\n`
+    document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
+    document.getElementById("results_id_payload").innerText += `Meter Battery: ${meterBattery}%\n`
+
+}
+
+function decodePayload14(payload) {
+
+    const batteryByte = payload.substring(0,2);
+    const SNRByte = payload.substring(3,5);
+    const RSSIByte = payload.substring(6,8);
+    const txPowerByte = payload.substring(9,11);
+    const resetsByte = payload.substring(12,14);
+    const fwByte = payload.substring(15,17);
+
+    const batteryPercentage = parseInt(batteryByte, 16);
+    const averageSNR = parseInt(SNRByte, 16) > 127 ? parseInt(SNRByte, 16) - 256 : parseInt(SNRByte, 16);
+    const averageRSSI = fromHexString(RSSIByte);
+    const averageTxPower = fromHexString(txPowerByte);
+    const numOfResets = fromHexString(resetsByte, 16);
+    const firmwareVersion = fromHexString(fwByte, 16);
+
+    document.getElementById("results_id_payload").innerText += `Battery Percentage: ${batteryPercentage}%\n`
+    document.getElementById("results_id_payload").innerText += `Average SNR: ${averageSNR}\n`
+    document.getElementById("results_id_payload").innerText += `Average RSSI: ${averageRSSI}\n`
+    document.getElementById("results_id_payload").innerText += `Average Tx Power: ${averageTxPower}\n`
+    document.getElementById("results_id_payload").innerText += `Number of Resets: ${numOfResets}\n`
+    document.getElementById("results_id_payload").innerText += `Firmware Version: 1.${firmwareVersion}\n`
+
+}
+
+function decodePayload21(payload) {
+    const meterStatusByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
+    const radioStatusByte = hexToBin(payload.substring(12,14)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20));
+    const miscByte = payload.substring(21,23);
+
+    //const alarmData =
+    //const meterStatus =
+    const meterPort = getBit(miscByte, 16, 8) > 0 ? 2 : 1;
+
+    document.getElementById("results_id_payload").innerText += `Meter Status: ${meterStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `MIU Status: ${radioStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
+}
