@@ -3,6 +3,12 @@ const authorization = {
     PASSWORD : "metering2023!",
     ROLE : "SUPER_ADMIN"
 };
+
+const MIUFlags = ["", "", "", "", "", "", "", "", "Extreme High Temp", "Extreme Low Temp", "",
+                  "Data Log Zeroed", "", "", "Meter ID Changed (Current) ", "Encoder Error (Current) ",
+                  "Disconnected Meter (Current) ", "Meter ID Changed (Historical) ", "Encoder Error (Historical) ",
+                  "Disconnected Meter (Historical) ", "Large Time Change", "MIU Parameter Changed",
+                  "Low Battery", "Reboot"];
 function isValidEUI(MIU) {
     let MIU_regex = /94A40C0B[A-F0-9]{8}$/;
     let isValid = MIU_regex.test(MIU) && MIU.length == 16;
@@ -65,6 +71,18 @@ function getBit(n, fromBase, bitPosition) {
 
 function hexToBin(n) {
     return parseInt(n, 16).toString(2).padStart(8, '0');
+}
+
+function getMIUAlarm(MIUStatus) {
+    let alarms = [];
+
+    for(let i = 0; i < MIUStatus.length; ++i) {
+        if (MIUStatus.at(i) == "1") {
+             alarms.push(MIUFlags[i]);
+        }
+    }
+
+    return alarms;
 }
 
 async function retrieveToken() {
@@ -213,11 +231,11 @@ function decryptPayload(payload, fPort) {
 function decodePayload11(payload) {
     const alarmDataByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
     const meterStatusByte = hexToBin(payload.substring(12,14)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
-    const miscByte = payload.substring(24,26);
+    const meterPortByte = payload.substring(24,26);
 
     //const alarmData =
     //const meterStatus =
-    const meterPort = getBit(miscByte, 16, 8) > 0 ? 2 : 1;
+    const meterPort = getBit(meterPortByte, 16, 8) > 0 ? 2 : 1;
 
     document.getElementById("results_id_payload").innerText += `Alarm Data: ${alarmDataByte}\n`
     document.getElementById("results_id_payload").innerText += `Meter Status: ${meterStatusByte}\n`
@@ -226,15 +244,16 @@ function decodePayload11(payload) {
 
 function decodePayload12(payload) {
     const alarmDataByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
-    const meterStatusByte = hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
-    const miscByte = payload.substring(24,26);
+    const MIUStatusByte = hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
+    const meterPortByte = payload.substring(24,26);
 
     //const alarmData =
-    //const meterStatus =
-    const meterPort = getBit(miscByte, 16, 8) > 0 ? 2 : 1;
+    const MIUStatus = getMIUAlarm(MIUStatusByte);
+    const meterPort = getBit(meterPortByte, 16, 8) > 0 ? 2 : 1;
 
     document.getElementById("results_id_payload").innerText += `Alarm Data: ${alarmDataByte}\n`
-    document.getElementById("results_id_payload").innerText += `MIU Status: ${meterStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `MIU Status Bits: ${MIUStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `MIU Status: ${MIUStatus}\n`
     document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
 }
 
@@ -281,14 +300,15 @@ function decodePayload14(payload) {
 
 function decodePayload21(payload) {
     const meterStatusByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
-    const radioStatusByte = hexToBin(payload.substring(12,14)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20));
+    const MIUStatusByte = hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(12,14));
     const miscByte = payload.substring(21,23);
 
-    //const alarmData =
     //const meterStatus =
+    const MIUStatus = getMIUAlarm(MIUStatusByte);
     const meterPort = getBit(miscByte, 16, 8) > 0 ? 2 : 1;
 
     document.getElementById("results_id_payload").innerText += `Meter Status: ${meterStatusByte}\n`
-    document.getElementById("results_id_payload").innerText += `MIU Status: ${radioStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `MIU Status Bits: ${MIUStatusByte}\n`
+    document.getElementById("results_id_payload").innerText += `MIU Status: ${MIUStatus.toString()}\n`
     document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
 }
