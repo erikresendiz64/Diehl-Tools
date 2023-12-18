@@ -164,7 +164,6 @@ async function requestPayload(token, EUI, fPort) {
         });
 
     if(decryptRequest.status >= 200 && decryptRequest.status < 300) {
-        console.log("Succesful Request");
         let decryptResponse = await decryptRequest.json();
         if(decryptResponse == undefined || decryptResponse["count"] == 0) {
             document.getElementById("results_id_payload").innerText += `No Payload Found for MIU ${MIU} with fPort ${fPortType} \n\n`;
@@ -265,11 +264,12 @@ function decodePayload13(payload) {
 
     const meterSerialNumber = parseInt(meterSerialNumberByte, 16);
     const meterPort = getBit(meterPortByte, 16, 8) > 0 ? 2 : 1;
-    const meterBattery = parseInt(meterBatteryByte, 16);
+    const meterBattery = fromHexString(meterBatteryByte);
+    const batteryDaysRemaining = Math.floor((meterBattery / 100) * 9999);
 
     document.getElementById("results_id_payload").innerText += `Meter Serial Number: ${meterSerialNumber}\n`
     document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
-    document.getElementById("results_id_payload").innerText += `Meter Battery: ${meterBattery}%\n`
+    document.getElementById("results_id_payload").innerText += `Meter Battery [Days Remaining]: ${batteryDaysRemaining}\n`
 
 }
 
