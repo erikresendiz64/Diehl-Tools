@@ -6,7 +6,7 @@ const authorization = {
 
 const MIUFlags = ["", "", "", "", "", "", "", "", "Extreme High Temp", "Extreme Low Temp", "",
                   "Data Log Zeroed", "", "", "Meter ID Changed (Current) ", "Encoder Error (Current) ",
-                  "Disconnected Meter (Current) ", "Meter ID Changed (Historical) ", "Encoder Error (Historical) ",
+                  "Disconnected Meter (Current)", "Meter ID Changed (Historical)", "Encoder Error (Historical) ",
                   "Disconnected Meter (Historical) ", "Large Time Change", "MIU Parameter Changed",
                   "Low Battery", "Reboot"];
 function isValidEUI(MIU) {
@@ -228,8 +228,8 @@ function decryptPayload(payload, fPort) {
 }
 
 function decodePayload11(payload) {
-    const alarmDataByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
-    const meterStatusByte = hexToBin(payload.substring(12,14)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
+    const alarmDataByte =  hexToBin(payload.substring(9,11)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(0,2));
+    const meterStatusByte = hexToBin(payload.substring(21,23)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(12,14));
     const meterPortByte = payload.substring(24,26);
 
     //const alarmData =
@@ -243,7 +243,7 @@ function decodePayload11(payload) {
 
 function decodePayload12(payload) {
     const alarmDataByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
-    const MIUStatusByte = hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(21,23));
+    const MIUStatusByte = hexToBin(payload.substring(21,23)) + hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(15,17));
     const meterPortByte = payload.substring(24,26);
 
     //const alarmData =
@@ -299,7 +299,7 @@ function decodePayload14(payload) {
 }
 
 function decodePayload21(payload) {
-    const meterStatusByte =  hexToBin(payload.substring(0,2)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(9,11));
+    const meterStatusByte =  hexToBin(payload.substring(9,11)) + hexToBin(payload.substring(6,8)) + hexToBin(payload.substring(3,5)) + hexToBin(payload.substring(0,2));
     const MIUStatusByte = hexToBin(payload.substring(18,20)) + hexToBin(payload.substring(15,17)) + hexToBin(payload.substring(12,14));
     const miscByte = payload.substring(21,23);
 

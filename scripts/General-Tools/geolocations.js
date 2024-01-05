@@ -36,7 +36,7 @@ async function main(fileData) {
   console.log("Writing CSV");
   await writeCSV();
   console.log("File is ready.");
-  download("geolocation.csv");
+  await download("geolocation.csv");
 }
 
 async function processData(fileData) {
@@ -103,10 +103,14 @@ function writeCSV() {
     exportData += "Address,City,State,Latitude,Longitude\n";
     console.log("Exporting Data...");
     for (let i = 0; i < locations.length; ++i) {
-      let address = locations[i] === undefined ? "" : locations[i]["query"]["street"];
-      let latitude = locations[i] === undefined ? "" : locations[i]["results"][0]["lat"];
-      let longitude =
-        locations[i] === undefined ? "" : locations[i]["results"][0]["lon"];
+      let lat = locations[i]["results"][0]["lat"];
+      let long = locations[i]["results"][0]["lon"]
+      let street = locations[i]["query"]["street"];
+      console.log("On Address: " + street);
+
+      let address = street === undefined ? "" : street;
+      let latitude = lat === undefined ? "" : lat;
+      let longitude = long ? "" : long;
       let city = locations[i] === undefined ? "" : locations[i]["query"]["city"];
       let state = locations[i] === undefined ? "" : locations[i]["query"]["state"];
       let content =
