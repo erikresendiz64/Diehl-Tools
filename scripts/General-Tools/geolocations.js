@@ -104,11 +104,14 @@ function writeCSV() {
     console.log("Exporting Data...");
     for (let i = 0; i < locations.length; ++i) {
       try {
-        let lat = locations[i]["results"][0]["lat"];
-        let long = locations[i]["results"][0]["lon"];
+        let jsonResults = JSON.parse(locations[i]["results"][0]);
+
+        let lat = jsonResults["lat"];
+        let long = jsonResults["lon"];
+
         let street = locations[i]["query"]["street"];
         let queryCity = locations[i]["query"]["city"];
-        let queryState = locations[i] === undefined ? "" : locations[i]["query"]["state"]
+        let queryState = locations[i]["query"]["state"];
         console.log("On Address: " + street + " with (" + lat + "," + long + ")");
 
         let address = street === undefined ? "" : street;
