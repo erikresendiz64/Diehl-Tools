@@ -108,7 +108,7 @@ function writeCSV() {
       let street = locations[i]["query"]["street"];
       let queryCity = locations[i]["query"]["city"];
       let queryState = locations[i] === undefined ? "" : locations[i]["query"]["state"]
-      console.log("On Address: " + street);
+      console.log("On Address: " + street + " with (" + lat + "," + long + ")");
 
       let address = street === undefined ? "" : street;
       let latitude = lat === undefined ? "" : lat;
