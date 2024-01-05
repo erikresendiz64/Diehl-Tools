@@ -103,25 +103,29 @@ function writeCSV() {
     exportData += "Address,City,State,Latitude,Longitude\n";
     console.log("Exporting Data...");
     for (let i = 0; i < locations.length; ++i) {
-      let lat = locations[i]["results"][0]["lat"];
-      let long = locations[i]["results"][0]["lon"];
-      let street = locations[i]["query"]["street"];
-      let queryCity = locations[i]["query"]["city"];
-      let queryState = locations[i] === undefined ? "" : locations[i]["query"]["state"]
-      console.log("On Address: " + street + " with (" + lat + "," + long + ")");
+      try {
+        let lat = locations[i]["results"][0]["lat"];
+        let long = locations[i]["results"][0]["lon"];
+        let street = locations[i]["query"]["street"];
+        let queryCity = locations[i]["query"]["city"];
+        let queryState = locations[i] === undefined ? "" : locations[i]["query"]["state"]
+        console.log("On Address: " + street + " with (" + lat + "," + long + ")");
 
-      let address = street === undefined ? "" : street;
-      let latitude = lat === undefined ? "" : lat;
-      let longitude = long === undefined ? "" : long;
-      let city = queryCity === undefined ? "" : queryCity;
-      let state = queryState === undefined ? "" : queryState;
-      let content =
-        `${address},` +
-        `${city},` +
-        `${state},` +
-        `${latitude},` +
-        `${longitude},\n`;
-      exportData += content;
+        let address = street === undefined ? "" : street;
+        let latitude = lat === undefined ? "" : lat;
+        let longitude = long === undefined ? "" : long;
+        let city = queryCity === undefined ? "" : queryCity;
+        let state = queryState === undefined ? "" : queryState;
+        let content =
+            `${address},` +
+            `${city},` +
+            `${state},` +
+            `${latitude},` +
+            `${longitude},\n`;
+        exportData += content;
+      } catch(e) {
+        console.log(e);
+      }
     }
     resolve();
   });
