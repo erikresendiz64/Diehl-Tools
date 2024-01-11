@@ -56,7 +56,7 @@ async function geolocateAddress(){
 
 async function geocodeList(fileData) {
   counter = 1;
-  exportData = "Address,City,State,Latitude,Longitude,Confidence\n";
+  exportData = "Address,City,State,Latitude,Longitude\n";
   document.getElementById("results_id").innerText = "";
 
   console.log("1. Beginning Data Processing Phase");
@@ -69,61 +69,115 @@ async function geocodeList(fileData) {
 async function processData(fileData) {
   const dataArray = fileData.split("\n");
   console.log(dataArray);
-  for (let i = 1; i < dataArray.length - 1; ++i) {
+  let eachService = dataArray.length / 2;
+  for (let i = 1; i < eachService - 1; ++i) {
     const location = dataArray[i].split(",");
     console.log("Getting JSON Response");
-    let jsonResponse = await getJSONResponse(location);
+    let locationInfo = await getJSONResponse1(location);
     console.log("Writing Data")
-    writeResult(jsonResponse);
+    writeResult(locationInfo);
+  }
+  for(let i = eachService; i < dataArray.length - 1; ++i) {
+    const location = dataArray[i].split(",");
+    console.log("Getting JSON Response");
+    let locationInfo = await getJSONResponse2(location);
+    console.log("Writing Data");
+    writeResult(locationInfo);
   }
 }
 
-async function getJSONResponse(location) {
+async function getJSONResponse1(location) {
   let address = location[0];
-
-  /*
-  * Need to Incorporate these into the query string for better accuracy
   let city = location[1];
   let state = location[2];
   let postalCode = location[3];
-   */
+
 
   let apiKey = "KAUp3OcalRvc4tZeIaKUkAiAuP8yMOb3";
 
-  document.getElementById('results_id').innerText += `(${counter}) Geolocating Address ${address}\n`;
   const response = await fetch(
-      `https://api.tomtom.com/search/2/geocode/${JSON.stringify(address)}.json?storeResult=false&limit=1&view=Unified&key=${apiKey}`
+      `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(`${address} ${city} ${state} ${postalCode}`)}.json?storeResult=false&limit=1&view=Unified&key=${apiKey}`
   );
+
+  if(response.status >= 400) return;
+
   const jsonData = await response.json();
 
+  if(jsonData.summary.numResults === 0) return;
+
+  document.getElementById('results_id').innerText += `(${counter}) Geolocating Address ${address}\n`;
   ++counter;
-  return jsonData;
-}
-
-function writeResult(jsonResponse) {
-  if(jsonResponse === undefined || jsonResponse.summary.numResults === 0) {
-    return;
-  }
-  let jsonResult = jsonResponse.results[0];
+  let jsonResult = jsonData.results[0];
+  let locationInfo;
   try {
-    const latitude = jsonResult.position.lat;
-    const longitude = jsonResult.position.lon;
-    const address = jsonResult.address.streetNumber + " " + jsonResult.address.streetName;
-    const city = jsonResult.address.municipality;
-    const state = jsonResult.address.countrySubdivisionCode;
-    const confidence = jsonResult.matchConfidence.score;
-
-    let content =
-        `${address},` +
-        `${city},` +
-        `${state},` +
-        `${latitude},` +
-        `${longitude},` +
-        `${confidence}\n`;
-    exportData += content;
+    locationInfo = {
+      "latitude" : jsonResult.position.lat,
+      "longitude" : jsonResult.position.lon,
+      "address" : jsonResult.address.streetNumber + " " + jsonResult.address.streetName,
+      "city" : jsonResult.address.municipality,
+      "state" : jsonResult.address.countrySubdivisionCode,
+    };
   } catch(e) {
     console.log(e);
   }
+
+  return locationInfo;
+}
+
+async function getJSONResponse2(location) {
+  let address = location[0];
+  let city = location[1];
+  let state = location[2];
+  let postalCode = location[3];
+
+
+  let apiKey = "b4315eb346bd4042b08e667728a4b656";
+
+  document.getElementById('results_id').innerText += `(${counter}) Geolocating Address ${address}\n`;
+  const response = await fetch(
+      `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(`${address} ${city} ${state} ${postalCode}`)}&format=json&apiKey=${apiKey}`
+  );
+
+  if(response.status >= 400) return;
+
+  const jsonData = await response.json();
+
+  ++counter;
+  let jsonResult = jsonData.results[0];
+  let locationInfo;
+  try {
+    locationInfo = {
+      "latitude" : jsonResult.lat,
+      "longitude" : jsonResult.lon,
+      "address" : jsonResult.formatted,
+      "city" : jsonResult.city,
+      "state" : jsonResult.state,
+    };
+  } catch(e) {
+    console.log(e);
+  }
+
+  return locationInfo;
+}
+
+function writeResult(locationInfo) {
+  if(locationInfo === undefined){
+    return;
+  }
+  const address = locationInfo.address;
+  const city = locationInfo.city;
+  const state = locationInfo.state;
+  const latitude = locationInfo.latitude;
+  const longitude = locationInfo.longitude;
+
+  let content =
+      `${address},` +
+      `${city},` +
+      `${state},` +
+      `${latitude},` +
+      `${longitude}\n`;
+
+  exportData += content;
 }
 
 function download(fileName) {
