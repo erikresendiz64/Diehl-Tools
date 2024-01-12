@@ -181,20 +181,24 @@ function writeResult(locationInfo) {
   if(locationInfo === undefined){
     return;
   }
-  const address = locationInfo.address;
-  const city = locationInfo.city;
-  const state = locationInfo.state;
-  const latitude = locationInfo.latitude;
-  const longitude = locationInfo.longitude;
+  try {
+    const address = locationInfo.address;
+    const city = locationInfo.city;
+    const state = locationInfo.state;
+    const latitude = locationInfo.latitude;
+    const longitude = locationInfo.longitude;
 
-  let content =
-      `${address},` +
-      `${city},` +
-      `${state},` +
-      `${latitude},` +
-      `${longitude}\n`;
+    let content =
+        `${address},` +
+        `${city},` +
+        `${state},` +
+        `${latitude},` +
+        `${longitude}\n`;
 
-  exportData += content;
+    exportData += content;
+  } catch(e) {
+    console.log(e);
+  }
 }
 
 function download(fileName) {
