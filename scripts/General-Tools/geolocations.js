@@ -173,7 +173,7 @@ async function getJSONResponse2(location) {
     locationInfo = {
       "latitude" : jsonResult.lat,
       "longitude" : jsonResult.lon,
-      "address" : jsonResult.formatted,
+      "address" : jsonResult.address_line1,
       "city" : jsonResult.city,
       "state" : jsonResult.state,
     };
