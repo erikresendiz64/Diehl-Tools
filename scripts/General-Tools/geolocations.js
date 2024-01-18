@@ -76,38 +76,7 @@ async function processData(fileData) {
         console.log("Writing Data")
         writeResult(locationInfo);
   }
-  // if(dataArray.length > 5000) {
-  //   for(let i = 1; i < 2500; ++i) {
-  //     const location = dataArray[i].split(",");
-  //     console.log("Getting JSON Response");
-  //     let locationInfo = await getJSONResponse1(location);
-  //     console.log("Writing Data")
-  //     writeResult(locationInfo);
-  //   }
-  //   for(let i = 2500; i < dataArray.length - 1; ++i) {
-  //     const location = dataArray[i].split(",");
-  //     console.log("Getting JSON Response");
-  //     let locationInfo = await getJSONResponse2(location);
-  //     console.log("Writing Data");
-  //     writeResult(locationInfo);
-  //   }
-  // } else {
-  //   let eachService = dataArray.length / 2;
-  //   for (let i = 1; i < eachService - 1; ++i) {
-  //     const location = dataArray[i].split(",");
-  //     console.log("Getting JSON Response");
-  //     let locationInfo = await getJSONResponse1(location);
-  //     console.log("Writing Data")
-  //     writeResult(locationInfo);
-  //   }
-  //   for (let i = eachService; i < dataArray.length - 1; ++i) {
-  //     const location = dataArray[i].split(",");
-  //     console.log("Getting JSON Response");
-  //     let locationInfo = await getJSONResponse2(location);
-  //     console.log("Writing Data");
-  //     writeResult(locationInfo);
-  //   }
-  // }
+
 }
 
 async function getJSONResponse1(location) {

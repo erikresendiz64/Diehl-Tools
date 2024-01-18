@@ -1,3 +1,56 @@
+let exportData;
+let counter;
+let listDecrpytion = false;
+let singleDecryption = false;
+window.addEventListener("DOMContentLoaded", (event) => {
+    const input = document.getElementById("csv-decrypt");
+    if (input) {
+        input.addEventListener("change", loadData);
+    }
+});
+
+function loadData(event) {
+    const fileList = this.files;
+
+    if (fileList.length > 0) {
+        console.log("Found a file");
+        const reader = new FileReader();
+        let fileData;
+        reader.addEventListener(
+            "load",
+            () => {
+                fileData = reader.result;
+                decryptList(fileData);
+            },
+            false
+        );
+
+        reader.readAsText(event.target.files[0]);
+    }
+}
+
+function download(fileName) {
+    const file = new Blob([exportData], {
+        type: "text/plain;charset=utf-8",
+    });
+    if (window.navigator.msSaveOrOpenBlob)
+        // IE10+
+        window.navigator.msSaveOrOpenBlob(file, fileName);
+    else {
+        // Others
+        let a = document.createElement("a"),
+            url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 0);
+    }
+}
+
 const authorization = {
     USER : "erik.resendiz@diehl.com",
     PASSWORD : "metering2023!",
@@ -16,6 +69,14 @@ function isValidEUI(MIU) {
         console.log("Invalid MIU: " + MIU);
     }
     return isValid;
+}
+
+function logAdditionalMessage(id, message, log) {
+    if(log) document.getElementById(id).innerText += message;
+}
+
+function logMessage(id, message, log) {
+    if(log) document.getElementById(id).innerText = message;
 }
 
 function timeConverter(UNIX_timestamp){
@@ -113,7 +174,37 @@ async function retrieveToken() {
 
 }
 
+async function decryptList(fileData) {
+    counter = 1;
+    listDecrpytion = true;
+    singleDecryption = false;
+    exportData = "Radio Serial Number,Radio Battery,Number of Resets,Average SNR,Average RSSI,Average Tx Power,FW Version,Timestamp\n";
+    document.getElementById("results_id_payload").innerText = "";
+    let token = await retrieveToken();
+
+    console.log("1. Beginning Data Processing Phase");
+    await processData(fileData, token);
+
+    console.log("2. Creating CSV");
+    download("payloads.csv");
+}
+
+async function processData(fileData, token) {
+    const dataArray = fileData.split("\n");
+    console.log(dataArray);
+    for(let i =1; i < dataArray.length; ++i, ++counter) {
+        let decryptInfo = dataArray[i].replace('\r', "").split(",");
+        console.log(decryptInfo + "\n");
+        console.log("Getting JSON Response");
+        let payloadInfo = await requestPayload(token, decryptInfo[0], `fPort${decryptInfo[1]}`);
+        console.log("Writing Data")
+        writeResult(payloadInfo);
+    }
+}
+
 async function decryptEUI(){
+    singleDecryption = true;
+    listDecrpytion = false;
     document.getElementById("results_id_payload").innerText = "";
     let EUI = document.getElementById("text-EUI-payload").value;
     let selectFPort = document.getElementById("fports");
@@ -125,11 +216,17 @@ async function decryptEUI(){
 }
 
 async function requestPayload(token, EUI, fPort) {
+    logAdditionalMessage("results_id_payload", `(${counter}) Decrypting ${EUI} with ${fPort}.\n`, listDecrpytion);
     let MIU = "94A40C0B0100" + EUI;
+    if(EUI.startsWith("94A4")) {
+        MIU = EUI;
+    }
+
+    console.log("Creating Request for " + MIU + ", " + fPort + "\n");
     let fPortType = fPort.substring(fPort.length - 2, fPort.length)
 
     if(!isValidEUI(MIU)) {
-        document.getElementById("results_id_payload").innerText += "Incorrect Serial Number Format\n\n"
+        logAdditionalMessage("results_id_payload", "Incorrect Serial Number Format\n\n", singleDecryption);
         return;
     }
 
@@ -166,22 +263,38 @@ async function requestPayload(token, EUI, fPort) {
     if(decryptRequest.status >= 200 && decryptRequest.status < 300) {
         let decryptResponse = await decryptRequest.json();
         if(decryptResponse == undefined || decryptResponse["count"] == 0) {
-            document.getElementById("results_id_payload").innerText += `No Payload Found for MIU ${MIU} with fPort ${fPortType} \n\n`;
+            logAdditionalMessage("results_id_payload", `No Payload Found for MIU ${MIU} with fPort ${fPortType} \n\n`, singleDecryption);
             return;
         }
-
-        processPayloadInformation(decryptResponse);
-
+        console.log("Processing Payload\n")
+        let payloadInfo = await processPayloadInformation(decryptResponse);
+        if(listDecrpytion) {
+            console.log("Retrieved Payload, adding radio key.\n")
+            payloadInfo.radio = EUI;
+            return payloadInfo;
+        }
     } else {
         console.log("Unsuccesfull Request")
+        return;
     }
 
 }
 
-function processPayloadInformation(response) {
+async function processPayloadInformation(response) {
     let EUIInfo = response["list"];
-    let numMessages = response["count"];
 
+    if(listDecrpytion) {
+        let payload = EUIInfo[0]["payload"];
+        let fPort = EUIInfo[0]["fPort"];
+        let timestamp = EUIInfo[0]["recvTime"];
+
+        console.log("Decrypting Payload " + payload + " with " + fPort + "\n")
+        let payloadObject = await decryptPayload(payload, fPort);
+        payloadObject.timestamp = (timestamp);
+        return payloadObject;
+    }
+
+    let numMessages = response["count"];
     document.getElementById("results_id_payload").innerText = `${numMessages} Message(s) Found\n`;
     let iterMessages = 1;
 
@@ -201,27 +314,27 @@ function processPayloadInformation(response) {
 function decryptPayload(payload, fPort) {
 
     const hexPayload = base64ToHex(payload, '-');
-
-    document.getElementById("results_id_payload").innerText += `Payload [Hex] : ${hexPayload}\n\n`
+    console.log("Seeking Payload Type\n");
+    logAdditionalMessage("results_id_payload", `Payload [Hex] : ${hexPayload}\n\n`, singleDecryption);
 
     switch (fPort) {
         case 11:
-            decodePayload11(hexPayload);
+            return decodePayload11(hexPayload);
             break;
         case 12:
-            decodePayload12(hexPayload);
+            return decodePayload12(hexPayload);
             break;
         case 13:
-            decodePayload13(hexPayload);
+            return decodePayload13(hexPayload);
             break;
         case 14:
-            decodePayload14(hexPayload);
+            return decodePayload14(hexPayload);
             break;
         case 21:
-            decodePayload21(hexPayload);
+            return decodePayload21(hexPayload);
             break;
         default:
-            document.getElementById("results_id_payload").innerText += `Error Occurred.\n`
+            logAdditionalMessage("results_id_payload", `Error Occurred.\n`, singleDecryption);
             return;
     }
 
@@ -289,6 +402,18 @@ function decodePayload14(payload) {
     const numOfResets = fromHexString(resetsByte, 16);
     const firmwareVersion = fromHexString(fwByte, 16);
 
+    console.log("Found payload, sending back data.\n");
+    if(listDecrpytion) {
+        return {
+            "battery" : batteryPercentage,
+            "snr" : averageSNR,
+            "rssi" : averageRSSI,
+            "txpower" : averageTxPower,
+            "resets" : numOfResets,
+            "fwversion" : firmwareVersion
+        };
+    }
+
     document.getElementById("results_id_payload").innerText += `Battery Percentage: ${batteryPercentage}%\n`
     document.getElementById("results_id_payload").innerText += `Average SNR: ${averageSNR}\n`
     document.getElementById("results_id_payload").innerText += `Average RSSI: ${averageRSSI}\n`
@@ -311,4 +436,34 @@ function decodePayload21(payload) {
     document.getElementById("results_id_payload").innerText += `MIU Status Bits: ${MIUStatusByte}\n`
     document.getElementById("results_id_payload").innerText += `MIU Status: ${MIUStatus.toString()}\n`
     document.getElementById("results_id_payload").innerText += `Meter Port: ${meterPort}\n`
+}
+
+function writeResult(payloadInfo) {
+    if(payloadInfo === undefined){
+        return;
+    }
+    try {
+        const radioSerial = payloadInfo.radio;
+        const radioBattery = payloadInfo.battery;
+        const numResets = payloadInfo.resets;
+        const snr = payloadInfo.snr;
+        const rssi = payloadInfo.rssi;
+        const txPower = payloadInfo.txpower;
+        const fw = payloadInfo.fwversion;
+        const timestamp = payloadInfo.timestamp;
+
+        let content =
+            `${radioSerial},` +
+            `${radioBattery},` +
+            `${numResets},` +
+            `${snr},` +
+            `${rssi},` +
+            `${txPower},` +
+            `${fw},` +
+            `${timestamp}\n`;
+
+        exportData += content;
+    } catch(e) {
+        console.log(e);
+    }
 }
