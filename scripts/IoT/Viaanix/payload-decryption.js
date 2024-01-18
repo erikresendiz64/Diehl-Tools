@@ -52,9 +52,8 @@ function download(fileName) {
 }
 
 const authorization = {
-    USER : "erik.resendiz@diehl.com",
-    PASSWORD : "metering2023!",
-    ROLE : "SUPER_ADMIN"
+    "username" : "sana.kanwal@diehl.com",
+    "password" : "Diehl2023.",
 };
 
 const MIUFlags = ["", "", "", "", "", "", "", "", "Extreme High Temp", "Extreme Low Temp", "",
@@ -73,10 +72,6 @@ function isValidEUI(MIU) {
 
 function logAdditionalMessage(id, message, log) {
     if(log) document.getElementById(id).innerText += message;
-}
-
-function logMessage(id, message, log) {
-    if(log) document.getElementById(id).innerText = message;
 }
 
 function timeConverter(UNIX_timestamp){
@@ -147,14 +142,12 @@ function getMIUAlarm(MIUStatus) {
 }
 
 async function retrieveToken() {
-    let authorizationRequest = await fetch('https://nwm.izarplus.com/gms/application/login',
+    let authorizationRequest = await fetch('https://portal.vxolympus.com/api/auth/login',
         {
             method: 'POST',
             body: JSON.stringify({
-                email: authorization.USER,
-                login: authorization.USER,
-                password: authorization.PASSWORD,
-                role: authorization.ROLE,
+                username: authorization.username,
+                password: authorization.password,
             }),
             headers : {
                 "Content-Type" : "application/json",
